@@ -17,6 +17,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000, // 10 second timeout
+  withCredentials: false // Changed to false for cross-origin requests
 });
 
 // Add a request interceptor for logging

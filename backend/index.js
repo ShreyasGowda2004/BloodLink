@@ -4,7 +4,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
-const fs = require('fs');
 const connectDB = require('./config/db');
 const donorRoutes = require('./routes/donors');
 const requestRoutes = require('./routes/requests');
@@ -12,7 +11,7 @@ const otpRoutes = require('./routes/otp');
 
 // Load environment variables
 console.log('Loading environment variables...');
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 console.log('Environment variables loaded:', {
   PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV,
@@ -25,7 +24,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'https://bloodlink-frontend.onrender.com', 'https://*.onrender.com'],
+  // Allow requests from all origins for separate hosting
+  origin: '*',
   credentials: true
 }));
 app.use(express.json());
@@ -67,62 +67,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Check for different potential static file locations
-const staticPaths = [
-  path.resolve(__dirname, 'public'),                 // backend/public
-  path.resolve(__dirname, '../frontend/dist'),       // frontend/dist
-  path.resolve(__dirname, '../dist'),                // dist
-  path.resolve(__dirname, '../public')               // public
-];
-
-// Find the first valid static path
-let validStaticPath = null;
-for (const staticPath of staticPaths) {
-  try {
-    if (fs.existsSync(staticPath) && fs.lstatSync(staticPath).isDirectory()) {
-      validStaticPath = staticPath;
-      console.log(`Found valid static directory at: ${validStaticPath}`);
-      break;
+// Root route handler for API server
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'BloodLink API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      donors: '/api/donors',
+      requests: '/api/requests',
+      otp: '/api/otp'
     }
-  } catch (error) {
-    console.log(`Error checking path ${staticPath}:`, error.message);
-  }
-}
-
-// If we found a valid path, serve static files
-if (validStaticPath) {
-  console.log(`Serving static files from: ${validStaticPath}`);
-  app.use(express.static(validStaticPath));
-  
-  // Serve index.html for any non-API routes (for SPA routing)
-  app.get('*', (req, res, next) => {
-    if (!req.path.startsWith('/api')) {
-      const indexPath = path.join(validStaticPath, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        return res.sendFile(indexPath);
-      } else {
-        console.log(`index.html not found in ${validStaticPath}`);
-      }
-    }
-    next();
   });
-} else {
-  console.log('No valid static directory found. Serving API-only mode.');
-  
-  // Root route handler for API-only mode
-  app.get('/', (req, res) => {
-    res.status(200).json({ 
-      message: 'BloodLink API Server',
-      version: '1.0.0',
-      endpoints: {
-        health: '/api/health',
-        donors: '/api/donors',
-        requests: '/api/requests',
-        otp: '/api/otp'
-      }
-    });
-  });
-}
+});
 
 // Route not found
 app.use((req, res, next) => {

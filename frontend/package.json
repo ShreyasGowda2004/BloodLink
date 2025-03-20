@@ -1,5 +1,5 @@
 {
-  "name": "blood-donation-platform",
+  "name": "bloodlink-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "cd ../backend && npm run dev",
-    "start": "concurrently \"npm run dev\" \"npm run server\""
+    "start": "node server.js"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: bloodlink-backend
+    env: node
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 16.x
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add this line when you set up your MongoDB instance
+      # - key: MONGODB_URI
+      #   value: your_mongodb_connection_string 

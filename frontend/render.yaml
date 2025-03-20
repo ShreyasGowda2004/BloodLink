@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: bloodlink-frontend
+    env: node
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 16.x
+      - key: VITE_API_URL
+        value: https://bloodlink-backend.onrender.com/api 
