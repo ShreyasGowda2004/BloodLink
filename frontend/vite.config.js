@@ -33,12 +33,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV === 'development',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-      },
-    },
+    minify: 'esbuild', // Use esbuild for minification (built into Vite)
     rollupOptions: {
       output: {
         manualChunks: {

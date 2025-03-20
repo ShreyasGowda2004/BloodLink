@@ -6,12 +6,18 @@ set -o errexit
 echo "Node version: $(node -v)"
 echo "NPM version: $(npm -v)"
 
+# Install global dependencies needed for build
+echo "Installing global dependencies..."
+npm install -g terser
+
 # Install dependencies for both frontend and backend
 echo "Installing dependencies..."
 npm install
 cd backend
 npm install
 cd ../frontend
+# Make sure terser is installed in the frontend
+npm install terser --save-dev
 npm install
 cd ..
 
