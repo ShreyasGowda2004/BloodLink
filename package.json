@@ -2,9 +2,13 @@
   "name": "blood-donation-platform",
   "version": "1.0.0",
   "description": "Blood Donation Platform with separate frontend and backend",
-  "main": "index.js",
+  "engines": {
+    "node": ">=16"
+  },
+  "main": "start.js",
   "scripts": {
-    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start": "node start.js",
+    "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "start:frontend": "cd frontend && BROWSER=none npm run dev",
     "start:backend": "cd backend && npm run dev",
     "install:all": "npm install && npm run install:frontend && npm run install:backend",

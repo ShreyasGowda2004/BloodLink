@@ -1,8 +1,13 @@
 // src/services/api.js
 import axios from 'axios';
 
-// Define API base URL using Vite environment variables
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Determine environment and set appropriate API base URL
+const isDevelopment = import.meta.env.DEV;
+const productionBackendURL = 'https://bloodlink-backend.onrender.com/api';
+const developmentBackendURL = 'http://localhost:5000/api';
+
+// Define API base URL using environment variables or fallback to appropriate URL based on environment
+const baseURL = import.meta.env.VITE_API_URL || (isDevelopment ? developmentBackendURL : productionBackendURL);
 console.log('Using API base URL:', baseURL);
 
 // Create an axios instance with the base URL and default headers
