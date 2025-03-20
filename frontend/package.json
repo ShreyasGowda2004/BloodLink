@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --no-open",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "server": "cd server && npm run dev",
+    "server": "cd ../backend && npm run dev",
     "start": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
@@ -23,8 +23,7 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.18.0",
     "tailwindcss": "^3.3.5",
-    "three": "^0.150.0",
-    "twilio": "^4.23.0"
+    "three": "^0.150.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
