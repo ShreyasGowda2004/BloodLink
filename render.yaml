@@ -1,24 +1,13 @@
 services:
   - type: web
-    name: bloodlink-frontend
-    env: static
-    buildCommand: cd frontend && npm install terser --save-dev && npm install && npm run build
-    staticPublishPath: frontend/dist
-    envVars:
-      - key: NODE_VERSION
-        value: 16.x
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-  - type: web
-    name: bloodlink-backend
+    name: bloodlink
     env: node
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: node start.js
     envVars:
       - key: NODE_VERSION
         value: 16.x
+      - key: NODE_ENV
+        value: production
       - key: PORT
         value: 10000 

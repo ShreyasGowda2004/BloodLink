@@ -27,6 +27,15 @@ cd frontend
 npm run build
 cd ..
 
+# Copy frontend build to a location accessible by the backend
+echo "Copying frontend build to backend..."
+mkdir -p backend/public
+cp -r frontend/dist/* backend/public/
+
+# Set production environment
+export NODE_ENV=production
+
 # Create a start script in the root directory
-echo "console.log('Starting the application...');" > start.js
+echo "console.log('Starting the application in ' + process.env.NODE_ENV + ' mode');" > start.js
+echo "process.env.NODE_ENV = process.env.NODE_ENV || 'production';" >> start.js
 echo "require('./backend/index.js');" >> start.js 
