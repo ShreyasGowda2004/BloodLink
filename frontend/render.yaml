@@ -6,6 +6,6 @@ services:
     startCommand: node server.js
     envVars:
       - key: NODE_VERSION
-        value: 16.x
+        value: 18.x
       - key: VITE_API_URL
         value: https://bloodlink-b6fl.onrender.com/api 
