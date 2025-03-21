@@ -76,10 +76,12 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <address className="not-italic">
-              <p className="mb-2">123 Blood Center Street</p>
-              <p className="mb-2">Cityville, State 12345</p>
-              <p className="mb-2">Email: info@bloodlink.com</p>
-              <p>Phone: (123) 456-7890</p>
+              <p className="mb-2">BloodLink</p>
+              <p className="mb-2">Bmsit Boys Hostel, Avalahalli, Yelahanka</p>
+              <p className="mb-2">Bengaluru, Karnataka, India, 560064</p>
+              <p className="mb-2">Email: shreyasgowda1901@gmail.com</p>
+              <p className="mb-2">Phone: +916361943681</p>
+              <p>Owner: Shreyas Gowda</p>
             </address>
           </div>
         </div>
