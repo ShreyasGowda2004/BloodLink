@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Determine environment and set appropriate API base URL
 const isDevelopment = import.meta.env.DEV;
-const productionBackendURL = 'https://bloodlink-backend.onrender.com/api';
+const productionBackendURL = 'https://bloodlink-b6fl.onrender.com/api';
 const developmentBackendURL = 'http://localhost:5000/api';
 
 // Define API base URL using environment variables or fallback to appropriate URL based on environment

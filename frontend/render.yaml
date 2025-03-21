@@ -8,4 +8,4 @@ services:
       - key: NODE_VERSION
         value: 16.x
       - key: VITE_API_URL
-        value: https://bloodlink-backend.onrender.com/api 
+        value: https://bloodlink-b6fl.onrender.com/api 
