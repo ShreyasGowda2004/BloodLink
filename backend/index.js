@@ -25,15 +25,36 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  // Allow requests from frontend and local development
-  origin: [
-    'https://blood-link-pi.vercel.app', 
-    'https://blood-link-q0wm.onrender.com', 
-    'http://localhost:3000', 
-    'http://localhost:5173',
-    'https://blood-link-79td4d0m4-shreyasgowda2004s-projects.vercel.app',
-    'https://blood-link.vercel.app'
-  ],
+  // Dynamic origin function to handle different deployment URLs
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Fixed list of allowed origins
+    const allowedOrigins = [
+      'https://blood-link-pi.vercel.app', 
+      'https://blood-link-q0wm.onrender.com', 
+      'http://localhost:3000', 
+      'http://localhost:5173',
+      'https://blood-link.vercel.app'
+    ];
+    
+    // Check if origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    // Allow any Vercel subdomain containing our project name patterns
+    if (
+      origin.includes('.vercel.app') && 
+      (origin.includes('blood-link') || origin.includes('shreyasgowda2004s-projects'))
+    ) {
+      return callback(null, true);
+    }
+    
+    // Disallow other origins
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());
