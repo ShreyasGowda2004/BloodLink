@@ -89,14 +89,14 @@ router.post('/login', async (req, res) => {
     const admin = await Admin.findOne({ email });
     
     if (!admin) {
-      return res.status(404).json({ error: 'Admin not found' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     // Validate password
     const isMatch = await admin.comparePassword(password);
     
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     // Generate JWT token
@@ -117,7 +117,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Admin login error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 });
 
@@ -207,7 +207,7 @@ router.get('/requests', authenticateAdmin, async (req, res) => {
     const bloodRequests = await BloodRequest.find()
       .populate({
         path: 'donorRequests.donor',
-        select: 'name phone email bloodType',
+        select: 'name phone bloodType',
         strictPopulate: false
       })
       .sort({ createdAt: -1 });

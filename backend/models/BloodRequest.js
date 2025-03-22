@@ -21,6 +21,16 @@ const bloodRequestSchema = new mongoose.Schema({
     required: [true, 'Phone number is required'],
     match: [/^\d{10}$/, 'Please enter a valid 10-digit phone number']
   },
+  hospitalName: {
+    type: String,
+    required: [true, 'Hospital name is required'],
+    trim: true
+  },
+  hospitalLocation: {
+    type: String,
+    required: [true, 'Hospital location is required'],
+    trim: true
+  },
   country: {
     type: String,
     required: [true, 'Country is required']
@@ -45,7 +55,7 @@ const bloodRequestSchema = new mongoose.Schema({
   // Track donors this request has been sent to
   donorRequests: [
     {
-      donorId: {
+      donor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Donor',
         required: true

@@ -228,7 +228,6 @@ const AdminDashboard = () => {
           <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Phone</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Blood Type</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Location</th>
@@ -240,7 +239,6 @@ const AdminDashboard = () => {
               donors.map((donor) => (
                 <tr key={donor._id}>
                   <td className="px-6 py-4 whitespace-nowrap">{donor.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{donor.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{donor.phone}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
@@ -253,7 +251,7 @@ const AdminDashboard = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center">No donors found</td>
+                <td colSpan="5" className="px-6 py-4 text-center">No donors found</td>
               </tr>
             )}
           </tbody>
@@ -271,7 +269,6 @@ const AdminDashboard = () => {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Patient Name</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Phone</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Blood Type</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Units</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hospital</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Created On</th>
@@ -282,15 +279,14 @@ const AdminDashboard = () => {
             {requests.length > 0 ? (
               requests.map((request) => (
                 <tr key={request._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{request.patientName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{request.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{request.phone}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                       {request.bloodType}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{request.unitsNeeded}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{request.hospitalName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{request.hospitalName || 'Not specified'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       request.donorRequests.some(dr => dr.status === 'accepted' || dr.status === 'donated')
@@ -330,7 +326,7 @@ const AdminDashboard = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="px-6 py-4 text-center">No requests found</td>
+                <td colSpan="7" className="px-6 py-4 text-center">No requests found</td>
               </tr>
             )}
           </tbody>

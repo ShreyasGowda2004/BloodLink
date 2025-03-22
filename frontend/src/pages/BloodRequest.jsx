@@ -19,6 +19,8 @@ const BloodRequest = () => {
     phone: '',
     urgency: 'normal',
     reason: '',
+    hospitalName: '',
+    hospitalLocation: '',
   });
   const [matchedDonors, setMatchedDonors] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +70,7 @@ const BloodRequest = () => {
       }
       
       // Make sure all required fields are filled
-      const requiredFields = ['name', 'bloodType', 'country', 'state', 'city', 'gender', 'phone'];
+      const requiredFields = ['name', 'bloodType', 'country', 'state', 'city', 'gender', 'phone', 'hospitalName', 'hospitalLocation'];
       const missingFields = requiredFields.filter(field => !formData[field]);
       
       if (missingFields.length > 0) {
@@ -462,6 +464,43 @@ const BloodRequest = () => {
                         <option key={city} value={city}>{city}</option>
                       ))}
                     </select>
+                  </div>
+                  
+                  {/* Hospital Information */}
+                  <div className="md:col-span-2">
+                    <h2 className="text-xl font-semibold mb-4 mt-4 border-b pb-2">Hospital Information</h2>
+                  </div>
+                  
+                  {/* Hospital Name */}
+                  <div className="md:col-span-1">
+                    <label className="block mb-2 font-medium" htmlFor="hospitalName">Hospital Name</label>
+                    <input
+                      type="text"
+                      id="hospitalName"
+                      name="hospitalName"
+                      value={formData.hospitalName}
+                      onChange={handleChange}
+                      required
+                      className={`w-full p-3 rounded-lg border ${
+                        darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                      }`}
+                    />
+                  </div>
+                  
+                  {/* Hospital Location */}
+                  <div className="md:col-span-1">
+                    <label className="block mb-2 font-medium" htmlFor="hospitalLocation">Hospital Location</label>
+                    <input
+                      type="text"
+                      id="hospitalLocation"
+                      name="hospitalLocation"
+                      value={formData.hospitalLocation}
+                      onChange={handleChange}
+                      required
+                      className={`w-full p-3 rounded-lg border ${
+                        darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                      }`}
+                    />
                   </div>
                 </div>
                 
