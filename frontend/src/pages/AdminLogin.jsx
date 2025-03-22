@@ -152,15 +152,6 @@ const AdminLogin = () => {
           </button>
           
           <div className="mt-6 text-center">
-            <p>
-              No admin account?{' '}
-              <Link 
-                to="/admin/register" 
-                className="text-red-600 hover:text-red-700 focus:outline-none focus:underline transition-colors"
-              >
-                Register here
-              </Link>
-            </p>
             <Link 
               to="/" 
               className={`block mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} hover:text-red-600 focus:outline-none focus:underline transition-colors`}

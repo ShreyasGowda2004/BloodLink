@@ -11,7 +11,6 @@ import Login from './pages/Login';
 import DonorDashboard from './pages/DonorDashboard';
 import RequestStatus from './pages/RequestStatus';
 import AdminLogin from './pages/AdminLogin';
-import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
@@ -34,7 +33,6 @@ function App() {
                 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/register" element={<AdminRegister />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
               </Routes>
             </main>

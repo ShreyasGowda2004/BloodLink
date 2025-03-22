@@ -75,12 +75,63 @@ const AdminDashboard = () => {
     }
   };
   
-  const formatLocation = (location) => {
-    if (!location) return 'Not provided';
-    if (typeof location === 'object' && location.coordinates) {
-      return `${location.coordinates[1].toFixed(4)}, ${location.coordinates[0].toFixed(4)}`;
+  const formatLocation = (donor) => {
+    if (!donor) return 'Not provided';
+    
+    const locationParts = [];
+    if (donor.city) locationParts.push(donor.city);
+    if (donor.state) locationParts.push(donor.state);
+    if (donor.country) locationParts.push(donor.country);
+    
+    if (locationParts.length > 0) {
+      return locationParts.join(', ');
     }
-    return String(location);
+    
+    // Fallback to coordinates if location object exists
+    if (donor.location && typeof donor.location === 'object' && donor.location.coordinates) {
+      return `${donor.location.coordinates[1].toFixed(4)}, ${donor.location.coordinates[0].toFixed(4)}`;
+    }
+    
+    return 'Not provided';
+  };
+  
+  const getRequestStatus = (request) => {
+    if (!request || !request.donorRequests || request.donorRequests.length === 0) {
+      return 'Pending';
+    }
+    
+    // Check if any donor has donated
+    if (request.donorRequests.some(dr => dr.status === 'donated')) {
+      return 'Donated';
+    }
+    
+    // Check if any donor has accepted
+    if (request.donorRequests.some(dr => dr.status === 'accepted')) {
+      return 'Accepted';
+    }
+    
+    // Check if all donors have rejected
+    if (request.donorRequests.length > 0 && 
+        request.donorRequests.every(dr => dr.status === 'rejected')) {
+      return 'Rejected';
+    }
+    
+    // Default to pending
+    return 'Pending';
+  };
+  
+  const getStatusColorClass = (status) => {
+    switch (status) {
+      case 'Donated':
+        return 'bg-green-100 text-green-800';
+      case 'Accepted':
+        return 'bg-blue-100 text-blue-800';
+      case 'Rejected':
+        return 'bg-red-100 text-red-800';
+      case 'Pending':
+      default:
+        return 'bg-yellow-100 text-yellow-800';
+    }
   };
   
   const renderDashboard = () => (
@@ -245,7 +296,7 @@ const AdminDashboard = () => {
                       {donor.bloodType}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{formatLocation(donor.location)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{formatLocation(donor)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{formatDate(donor.createdAt)}</td>
                 </tr>
               ))
@@ -289,17 +340,9 @@ const AdminDashboard = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{request.hospitalName || 'Not specified'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      request.donorRequests.some(dr => dr.status === 'accepted' || dr.status === 'donated')
-                        ? 'bg-green-100 text-green-800'
-                        : request.donorRequests.every(dr => dr.status === 'rejected')
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                      getStatusColorClass(getRequestStatus(request))
                     }`}>
-                      {request.donorRequests.some(dr => dr.status === 'accepted' || dr.status === 'donated')
-                        ? 'Fulfilled'
-                        : request.donorRequests.every(dr => dr.status === 'rejected')
-                          ? 'Rejected'
-                          : 'Pending'}
+                      {getRequestStatus(request)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{formatDate(request.createdAt)}</td>

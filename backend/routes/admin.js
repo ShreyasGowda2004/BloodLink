@@ -89,14 +89,14 @@ router.post('/login', async (req, res) => {
     const admin = await Admin.findOne({ email });
     
     if (!admin) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid email address' });
     }
     
     // Validate password
     const isMatch = await admin.comparePassword(password);
     
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid password' });
     }
     
     // Generate JWT token
@@ -191,7 +191,9 @@ router.get('/dashboard', authenticateAdmin, async (req, res) => {
 // @access  Private (Admin only)
 router.get('/donors', authenticateAdmin, async (req, res) => {
   try {
-    const donors = await Donor.find().select('-password');
+    const donors = await Donor.find()
+      .select('-password')
+      .select('name phone bloodType city state country location createdAt updatedAt donationCount');
     res.status(200).json(donors);
   } catch (error) {
     console.error('Get donors error:', error);

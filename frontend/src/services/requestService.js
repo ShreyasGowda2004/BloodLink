@@ -55,19 +55,58 @@ export const createBloodRequest = async (requestData) => {
 export const sendRequestToDonor = async (requestId, donorId) => {
   try {
     console.log(`Sending request ${requestId} to donor ${donorId}`);
+    
+    // Validate IDs before sending
+    if (!requestId || !donorId) {
+      console.error('Missing requestId or donorId');
+      return {
+        success: false,
+        error: 'Invalid request or donor information. Please try again.'
+      };
+    }
+    
     const response = await axios.post(`${API_URL}/requests/${requestId}/donors/${donorId}`);
     console.log('Send request to donor response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error sending request to donor:', error);
     
-    if (error.response && error.response.status === 400) {
+    // Handle specific error responses from the server
+    if (error.response) {
+      console.error('Server responded with error:', error.response.status, error.response.data);
+      
+      if (error.response.status === 400) {
+        return {
+          success: false,
+          error: error.response.data.error || 'Request already sent to this donor'
+        };
+      }
+      
+      if (error.response.status === 404) {
+        return {
+          success: false,
+          error: error.response.data.error || 'Request or donor not found'
+        };
+      }
+      
+      if (error.response.data && error.response.data.error) {
+        return {
+          success: false,
+          error: error.response.data.error
+        };
+      }
+    }
+    
+    // Handle network errors
+    if (error.request && !error.response) {
+      console.error('Network error - no response received');
       return {
         success: false,
-        error: error.response.data.error || 'Request already sent to this donor'
+        error: 'Network error. Please check your connection and try again.'
       };
     }
     
+    // Generic error fallback
     return {
       success: false,
       error: 'Failed to send request to donor. Please try again.'
