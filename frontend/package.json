@@ -10,7 +10,8 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "cd ../backend && npm run dev",
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "vite build"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
