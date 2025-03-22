@@ -234,7 +234,7 @@ exports.deleteRequest = async (req, res) => {
 // Get matching donors for a request
 exports.getMatchingDonors = async (req, res) => {
   try {
-    const request = await Request.findById(req.params.id);
+    const request = await BloodRequest.findById(req.params.id);
     
     if (!request) {
       return res.status(404).json({
@@ -284,9 +284,10 @@ exports.getMatchingDonors = async (req, res) => {
       data: donors
     });
   } catch (error) {
+    console.error('Error getting matching donors:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error'
+      error: 'Server Error: ' + error.message
     });
   }
 };
@@ -303,7 +304,7 @@ exports.fulfillRequest = async (req, res) => {
       });
     }
     
-    const request = await Request.findById(req.params.id);
+    const request = await BloodRequest.findById(req.params.id);
     
     if (!request) {
       return res.status(404).json({
@@ -323,23 +324,60 @@ exports.fulfillRequest = async (req, res) => {
     
     // Update request status
     request.status = 'fulfilled';
-    request.matchedDonors.push(donorId);
+    
+    // Find the donor request within the blood request
+    const donorRequest = request.donorRequests.find(
+      dr => dr.donor && dr.donor.toString() === donorId
+    );
+    
+    if (!donorRequest) {
+      // Add the donor to the request's contacted donors
+      request.donorRequests.push({
+        donor: donor._id,
+        status: 'donated',
+        createdAt: new Date()
+      });
+    } else {
+      // Update existing donor request
+      donorRequest.status = 'donated';
+      donorRequest.updatedAt = new Date();
+    }
+    
     await request.save();
     
     // Update donor information
-    donor.donationCount += 1;
-    donor.lastDonation = Date.now();
+    donor.donationCount = (donor.donationCount || 0) + 1;
+    donor.lastDonation = new Date();
     donor.isAvailable = false; // Temporarily unavailable after donation
+    
+    // Update the donor's blood requests array
+    const donorBloodRequest = donor.bloodRequests.find(
+      br => br.requestId && br.requestId.toString() === request._id.toString()
+    );
+    
+    if (!donorBloodRequest) {
+      donor.bloodRequests.push({
+        requestId: request._id,
+        status: 'donated',
+        createdAt: new Date()
+      });
+    } else {
+      donorBloodRequest.status = 'donated';
+      donorBloodRequest.updatedAt = new Date();
+    }
+    
     await donor.save();
     
     res.status(200).json({
       success: true,
+      message: 'Request marked as fulfilled',
       data: request
     });
   } catch (error) {
+    console.error('Error fulfilling request:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error'
+      error: 'Server Error: ' + error.message
     });
   }
 };
@@ -375,7 +413,7 @@ exports.sendRequestToDonors = async (req, res) => {
     console.log(`Found ${matchingDonors.length} matching donors`);
     
     // Get list of donor IDs that have already been sent this request
-    const existingDonorIds = bloodRequest.donorRequests.map(r => r.donorId.toString());
+    const existingDonorIds = bloodRequest.donorRequests.map(r => r.donor ? r.donor.toString() : null).filter(Boolean);
     
     // Filter out donors who have already been sent this request
     const newDonors = matchingDonors.filter(
@@ -396,14 +434,16 @@ exports.sendRequestToDonors = async (req, res) => {
       // Add to donor's blood requests
       donor.bloodRequests.push({
         requestId: bloodRequest._id,
-        status: 'pending'
+        status: 'pending',
+        createdAt: new Date()
       });
       await donor.save();
       
       // Add to blood request's donor requests
       bloodRequest.donorRequests.push({
-        donorId: donor._id,
-        status: 'pending'
+        donor: donor._id,
+        status: 'pending',
+        createdAt: new Date()
       });
     });
     
@@ -425,7 +465,7 @@ exports.sendRequestToDonors = async (req, res) => {
     console.error('Error sending request to donors:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error'
+      error: 'Server Error: ' + error.message
     });
   }
 };
@@ -619,7 +659,7 @@ exports.sendRequestToSpecificDonor = async (req, res) => {
     
     // Check if the request has already been sent to this donor
     const alreadySent = request.donorRequests.some(req => 
-      req.donorId.toString() === donorId.toString()
+      req.donor && req.donor.toString() === donorId.toString()
     );
     
     if (alreadySent) {
@@ -640,7 +680,7 @@ exports.sendRequestToSpecificDonor = async (req, res) => {
     
     // Add the donor to the request's contacted donors
     request.donorRequests.push({
-      donorId: donor._id,
+      donor: donor._id,
       status: 'pending',
       createdAt: new Date()
     });
@@ -686,74 +726,56 @@ exports.confirmDonation = async (req, res) => {
     if (!bloodRequest) {
       return res.status(404).json({ success: false, error: 'Blood request not found' });
     }
-
-    // Find the specific donor request
+    
+    // Find the donor request within the blood request
     const donorRequest = bloodRequest.donorRequests.find(
-      dr => dr.donorId.toString() === donorId && dr.status === 'accepted'
+      dr => dr.donor && dr.donor.toString() === donorId
     );
-
+    
     if (!donorRequest) {
-      // Check if this donor has a request with any status (might be already donated or rejected)
-      const anyDonorRequest = bloodRequest.donorRequests.find(
-        dr => dr.donorId.toString() === donorId
-      );
-      
-      if (anyDonorRequest) {
-        return res.status(400).json({ 
-          success: false, 
-          error: `This donor's request is already in '${anyDonorRequest.status}' status` 
-        });
-      }
-      
-      return res.status(400).json({ 
+      return res.status(404).json({ 
         success: false, 
-        error: 'No accepted request found for this donor' 
+        error: 'This donor is not associated with this blood request' 
       });
     }
-
-    // Update the donor request to donated status
+    
+    // Update the donation status to 'donated'
     donorRequest.status = 'donated';
-    donorRequest.updatedAt = Date.now();
+    donorRequest.updatedAt = new Date();
     
-    // Update the overall status to fulfilled
-    bloodRequest.overallStatus = 'fulfilled';
-    
-    // Save the changes
+    // Save the updated blood request
     await bloodRequest.save();
     
-    // Update the donor's bloodRequests array and donation history
+    // Update the donor's record
     const donor = await Donor.findById(donorId);
+    
     if (donor) {
-      // Update the donor's request for this blood request
-      const donorRequestIndex = donor.bloodRequests.findIndex(
-        req => req.requestId.toString() === id
+      // Find the corresponding request in the donor's bloodRequests array
+      const donorBloodRequest = donor.bloodRequests.find(
+        br => br.requestId && br.requestId.toString() === id
       );
       
-      if (donorRequestIndex !== -1) {
-        donor.bloodRequests[donorRequestIndex].status = 'donated';
-        donor.bloodRequests[donorRequestIndex].updatedAt = new Date();
+      if (donorBloodRequest) {
+        donorBloodRequest.status = 'donated';
+        donorBloodRequest.updatedAt = new Date();
+        
+        // Increment donation count
+        donor.donationCount = (donor.donationCount || 0) + 1;
+        
+        await donor.save();
       }
-      
-      // Update donation history
-      donor.donationCount = (donor.donationCount || 0) + 1;
-      donor.lastDonation = 'less_than_3_months'; // Use the enum value from schema
-      
-      await donor.save();
-      console.log(`Updated donor ${donorId} with donated status for request ${id}`);
-    } else {
-      console.log(`Warning: Donor ${donorId} not found when confirming donation`);
     }
-
+    
     return res.status(200).json({
       success: true,
       message: 'Donation confirmed successfully',
-      bloodRequest
+      data: bloodRequest
     });
   } catch (error) {
     console.error('Error confirming donation:', error);
     return res.status(500).json({
       success: false,
-      error: 'Server error while confirming donation: ' + error.message
+      error: 'Server error: ' + error.message
     });
   }
 };
