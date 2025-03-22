@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const donorRoutes = require('./routes/donors');
 const requestRoutes = require('./routes/requests');
 const otpRoutes = require('./routes/otp');
+const adminRoutes = require('./routes/admin');
 
 // Load environment variables
 console.log('Loading environment variables...');
@@ -56,6 +57,7 @@ app.use((req, res, next) => {
 app.use('/api/donors', donorRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/otp', otpRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
