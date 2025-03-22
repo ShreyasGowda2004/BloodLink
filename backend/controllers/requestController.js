@@ -480,8 +480,9 @@ exports.getBloodRequestStatus = async (req, res) => {
       console.log(`Populating donor information for request ${request._id}`);
       const populatedRequest = await BloodRequest.findById(request._id)
         .populate({
-          path: 'donorRequests.donorId',
-          select: 'name bloodType city state phone'
+          path: 'donorRequests.donor',
+          select: 'name bloodType city state phone',
+          strictPopulate: false
         });
       
       if (populatedRequest) {
@@ -494,14 +495,14 @@ exports.getBloodRequestStatus = async (req, res) => {
       // Get all donors with their status
       const allDonors = request.donorRequests
         .map(dr => {
-          if (dr.donorId) {
+          if (dr.donor) {
             return {
-              _id: dr.donorId._id, // Include the donor ID
-              name: dr.donorId.name || 'Unknown Donor',
-              bloodType: dr.donorId.bloodType || 'Unknown',
-              city: dr.donorId.city || 'Unknown',
-              state: dr.donorId.state || 'Unknown',
-              phone: dr.donorId.phone || 'Unknown',
+              _id: dr.donor._id, // Include the donor ID
+              name: dr.donor.name || 'Unknown Donor',
+              bloodType: dr.donor.bloodType || 'Unknown',
+              city: dr.donor.city || 'Unknown',
+              state: dr.donor.state || 'Unknown',
+              phone: dr.donor.phone || 'Unknown',
               status: dr.status,   // Include the actual status from donorRequests
               updatedAt: dr.updatedAt || new Date()
             };

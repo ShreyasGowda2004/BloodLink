@@ -191,8 +191,16 @@ const BloodRequest = () => {
         
         console.log('Blood request sent successfully to donor');
         
-        // No alert - just set a message in the UI instead of using an alert
-        setSuccessMessage('Request has been sent to the donor.');
+        // Clear any previous error
+        setError('');
+        
+        // Set a success message
+        setSuccessMessage(
+          `Request has been sent to ${donor.name}. Please check the Request Status page regularly for updates.`
+        );
+        
+        // Scroll to the top to ensure the user sees the message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         console.error('Failed to send request to donor:', response.error);
         setError(response.error || 'Failed to send request to donor');
@@ -535,16 +543,35 @@ const BloodRequest = () => {
                   
                   {/* Success message when request is sent */}
                   {successMessage && (
-                    <div className="p-4 mb-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center">
-                      <p>{successMessage}</p>
-                      <p className="mt-2">
-                        <a 
-                          href="/request-status" 
-                          className="underline font-medium hover:text-green-700 dark:hover:text-green-300"
+                    <div className="p-4 mb-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center">
+                      <div className="flex flex-col items-center">
+                        <svg 
+                          className="w-10 h-10 text-green-600 dark:text-green-300 mb-3" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24" 
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          Check Request Status Page
-                        </a> for updates.
-                      </p>
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth="2" 
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          ></path>
+                        </svg>
+                        <p className="text-lg font-medium">{successMessage}</p>
+                        <div className="mt-4">
+                          <a 
+                            href="/request-status" 
+                            className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                          >
+                            <span>Check Request Status</span>
+                            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   )}
                   
