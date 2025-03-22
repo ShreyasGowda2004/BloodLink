@@ -30,7 +30,22 @@ export const loginAdmin = async (credentials) => {
     
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : new Error('Could not login');
+    console.error('Login error:', error);
+    
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Response data:', error.response.data);
+      throw error.response.data;
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+      throw { error: 'No response from server. Please try again later.' };
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', error.message);
+      throw { error: 'Could not login. Please try again.' };
+    }
   }
 };
 

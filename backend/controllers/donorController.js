@@ -385,7 +385,7 @@ exports.updateRequestStatus = async (req, res) => {
     
     if (bloodRequest) {
       const donorRequestIndex = bloodRequest.donorRequests.findIndex(
-        dr => dr.donorId.toString() === donorId
+        dr => dr.donor && dr.donor.toString() === donorId
       );
       
       if (donorRequestIndex !== -1) {
@@ -398,12 +398,12 @@ exports.updateRequestStatus = async (req, res) => {
         }
         
         await bloodRequest.save();
-        console.log(`Updated blood request ${requestId} with donor ${donorId} status: ${status}`);
+        console.log(`Updated blood request ${requestId} with ${status} status for donor ${donorId}`);
       } else {
         console.log(`Warning: Donor ${donorId} not found in blood request ${requestId}`);
       }
     } else {
-      console.log(`Warning: Blood request ${requestId} not found`);
+      console.log(`Warning: Blood request ${requestId} not found when updating status`);
     }
     
     res.status(200).json({

@@ -117,7 +117,15 @@ export const AdminProvider = ({ children }) => {
       resetInactivityTimer(); // Start the inactivity timer
       return true;
     } catch (error) {
-      setError(error.error || 'Failed to login');
+      console.error('Login error in context:', error);
+      // Handle the error properly depending on its structure
+      if (typeof error === 'object' && error !== null) {
+        setError(error.error || 'Failed to login. Please check your credentials.');
+      } else if (typeof error === 'string') {
+        setError(error);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
       setLoading(false);
       return false;
     }
