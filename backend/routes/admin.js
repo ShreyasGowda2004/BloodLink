@@ -205,7 +205,11 @@ router.get('/donors', authenticateAdmin, async (req, res) => {
 router.get('/requests', authenticateAdmin, async (req, res) => {
   try {
     const bloodRequests = await BloodRequest.find()
-      .populate('donorRequests.donor', 'name phone email bloodType')
+      .populate({
+        path: 'donorRequests.donor',
+        select: 'name phone email bloodType',
+        strictPopulate: false
+      })
       .sort({ createdAt: -1 });
       
     res.status(200).json(bloodRequests);
