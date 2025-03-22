@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
   // Allow requests from frontend and local development
-  origin: ['https://blood-link-q0wm.onrender.com', 'http://localhost:3000', 'http://localhost:5173'],
+  origin: ['https://blood-link-pi.vercel.app', 'https://blood-link-q0wm.onrender.com', 'http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
