@@ -75,6 +75,14 @@ const AdminDashboard = () => {
     }
   };
   
+  const formatLocation = (location) => {
+    if (!location) return 'Not provided';
+    if (typeof location === 'object' && location.coordinates) {
+      return `${location.coordinates[1].toFixed(4)}, ${location.coordinates[0].toFixed(4)}`;
+    }
+    return String(location);
+  };
+  
   const renderDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {/* Donors Card */}
@@ -239,7 +247,7 @@ const AdminDashboard = () => {
                       {donor.bloodType}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{donor.location}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{formatLocation(donor.location)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{formatDate(donor.createdAt)}</td>
                 </tr>
               ))
