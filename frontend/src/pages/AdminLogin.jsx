@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AdminContext } from '../context/AdminContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { FaUserShield, FaLock, FaSignInAlt } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminLogin = () => {
   const { login, error, clearError, isAuthenticated } = useContext(AdminContext);
@@ -16,7 +16,8 @@ const AdminLogin = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showError, setShowError] = useState(false);
-  
+  const [errorMessage, setErrorMessage] = useState('');
+
   useEffect(() => {
     // If already authenticated, redirect to admin dashboard
     if (isAuthenticated) {
@@ -27,8 +28,10 @@ const AdminLogin = () => {
     return () => clearError();
   }, [isAuthenticated, navigate, clearError]);
   
+  // Update local error message if error comes from context
   useEffect(() => {
     if (error) {
+      setErrorMessage(error);
       setShowError(true);
       setTimeout(() => setShowError(false), 5000); // Hide error after 5 seconds
     }
@@ -36,17 +39,51 @@ const AdminLogin = () => {
   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error when user is typing
+    if (showError) {
+      setShowError(false);
+    }
+  };
+  
+  const validateEmail = (email) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
   };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Form validation
+    if (!formData.email.trim()) {
+      setErrorMessage('Email is required');
+      setShowError(true);
+      return;
+    }
+    
+    if (!validateEmail(formData.email)) {
+      setErrorMessage('Please enter a valid email address');
+      setShowError(true);
+      return;
+    }
+    
+    if (!formData.password) {
+      setErrorMessage('Password is required');
+      setShowError(true);
+      return;
+    }
+    
     setIsSubmitting(true);
+    clearError(); // Clear any previous errors
+    
     const success = await login(formData);
     setIsSubmitting(false);
     
     if (success) {
       navigate('/admin/dashboard');
+    } else if (!errorMessage) {
+      // Only set this if context didn't already set an error
+      setErrorMessage('Invalid email or password');
+      setShowError(true);
     }
   };
   
@@ -66,16 +103,18 @@ const AdminLogin = () => {
           </p>
         </div>
         
-        {showError && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-          >
-            <p>{error}</p>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {showError && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+            >
+              <p>{errorMessage}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
@@ -92,7 +131,6 @@ const AdminLogin = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
                 className={`block w-full pl-10 pr-3 py-3 rounded-lg ${
                   darkMode 
                     ? 'bg-gray-700 text-white placeholder-gray-400 border-gray-600' 
@@ -117,7 +155,6 @@ const AdminLogin = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
                 className={`block w-full pl-10 pr-3 py-3 rounded-lg ${
                   darkMode 
                     ? 'bg-gray-700 text-white placeholder-gray-400 border-gray-600' 
@@ -165,4 +202,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin; 
+export default AdminLogin;
