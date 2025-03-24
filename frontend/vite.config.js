@@ -25,23 +25,25 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
+        // Don't rewrite the path - keep the /api prefix
+        // rewrite: (path) => path.replace(/^\/api/, '')
       },
     },
   },
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV === 'development',
-    minify: 'esbuild',
+    minify: 'esbuild', // Use esbuild for minification (built into Vite)
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          threejs: ['@react-three/fiber', '@react-three/drei', 'three'],
+          animations: ['framer-motion', 'three'],
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'axios', 'framer-motion', '@react-three/fiber', '@react-three/drei', 'three'],
+    include: ['react', 'react-dom', 'react-router-dom', 'axios', 'framer-motion'],
   },
 });
