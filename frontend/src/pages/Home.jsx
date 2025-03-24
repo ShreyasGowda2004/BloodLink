@@ -3,7 +3,7 @@ import { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
-import GlobeVisualization from '../components/globe/GlobeVisualization';
+import GlobeVisualization from '../components/GlobeVisualization';
 import DonationStats from '../components/DonationStats';
 import AwarenessQuotes from '../components/AwarenessQuotes';
 
