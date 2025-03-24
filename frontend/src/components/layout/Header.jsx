@@ -29,7 +29,6 @@ const Header = () => {
     { name: 'Home', path: '/' },
     { name: 'Donor Registration', path: '/register' },
     { name: 'Request Blood', path: '/request' },
-    { name: 'Admin Login', path: '/admin/login' },
     { name: 'Donor Login', path: '/login' },
   ];
 
@@ -43,10 +42,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center">
               <svg width="32" height="32" viewBox="0 0 32 32" className="mr-2">
                 <path
                   d="M16 0 C16 0 0 16 0 24 C0 32 8 32 16 32 C24 32 32 32 32 24 C32 16 16 0 16 0 Z"
@@ -87,7 +83,7 @@ const Header = () => {
               {darkMode ? <FaSun className="text-yellow-300" /> : <FaMoon className="text-gray-700" />}
             </button>
 
-            {/* User profile or login */}
+            {/* User profile or admin login */}
             {isAuthenticated ? (
               <div className="relative">
                 <button
@@ -98,7 +94,6 @@ const Header = () => {
                     <FaUser />
                   </div>
                 </button>
-
                 {/* Profile dropdown */}
                 {isProfileOpen && (
                   <motion.div
@@ -131,10 +126,10 @@ const Header = () => {
               </div>
             ) : (
               <Link
-                to="/login"
+                to="/adminlogin"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
               >
-                Login
+                Admin Login
               </Link>
             )}
 
@@ -182,4 +177,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
