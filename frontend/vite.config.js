@@ -41,9 +41,10 @@ export default defineConfig({
           animations: ['framer-motion', 'three'],
         },
       },
+      external: ['@react-three/fiber', '@react-three/drei', 'three'],
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'axios', 'framer-motion'],
+    include: ['react', 'react-dom', 'react-router-dom', 'axios', 'framer-motion', '@react-three/fiber', '@react-three/drei', 'three'],
   },
 });
