@@ -425,30 +425,21 @@ const Home = () => {
       </section>
       
       {/* Globe Visualization Section */}
-      <section className={`py-20 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className="container mx-auto px-6">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Global Blood Donation Impact</h2>
-            <p className="text-xl max-w-3xl mx-auto opacity-80">
-              Explore blood donation statistics around the world and see the impact of donors like you.
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Explore blood donation statistics across different countries
             </p>
           </motion.div>
-          
-          <motion.div 
-            className="h-[600px]"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            <GlobeVisualization />
-          </motion.div>
+          <GlobeVisualization />
         </div>
       </section>
       
