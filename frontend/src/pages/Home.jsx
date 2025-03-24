@@ -505,9 +505,18 @@ const Home = () => {
                   Register as Donor
                 </motion.button>
               </Link>
-              <Link to="/login">
+              <Link to="/admin/login">
                 <motion.button
                   className="px-8 py-4 border-2 border-white rounded-full font-semibold text-white hover:bg-white hover:text-red-600 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Admin Login
+                </motion.button>
+              </Link>
+              <Link to="/login">
+                <motion.button
+                  className="px-8 py-4 bg-transparent border-2 border-white rounded-full font-semibold text-white hover:bg-white hover:text-red-600 transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >

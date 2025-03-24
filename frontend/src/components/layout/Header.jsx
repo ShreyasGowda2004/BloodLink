@@ -29,7 +29,8 @@ const Header = () => {
     { name: 'Home', path: '/' },
     { name: 'Donor Registration', path: '/register' },
     { name: 'Request Blood', path: '/request' },
-    { name: 'Admin', path: '/admin/login' },
+    { name: 'Admin Login', path: '/admin/login' },
+    { name: 'Donor Login', path: '/login' },
   ];
 
   const isActive = (path) => {
