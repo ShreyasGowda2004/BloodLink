@@ -1,6 +1,11 @@
 // src/services/donorService.js
 import api from './api';
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Get donor by ID
 export const getDonorById = async (donorId) => {
   try {
@@ -44,40 +49,30 @@ export const loginDonor = async (credentials) => {
 };
 
 // Register a new donor
-export const registerDonor = async (donorData) => {
+export const registerDonor = async (donorData, retryCount = 0) => {
   try {
-    // Remove confirmPassword before sending to API
-    const { confirmPassword, ...dataToSend } = donorData;
-    
-    console.log('Sending donor data to API:', dataToSend);
-    const response = await api.post('/donors', dataToSend);
-    console.log('API response:', response.data);
+    console.log('Attempting to register donor...');
+    const response = await api.post('/donors', donorData);
+    console.log('Donor registration successful:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error registering donor:', error);
+    console.error('Error registering donor:', error.message);
     
-    // Phone number already exists
-    if (error.response && error.response.status === 400 && 
-        error.response.data.error && error.response.data.error.includes('Phone number already registered')) {
-      return {
-        success: false,
-        error: 'This phone number is already registered. Please use a different phone number or login to your account.'
-      };
+    // If we haven't exceeded max retries and it's a timeout or network error
+    if (retryCount < MAX_RETRIES && 
+        (error.code === 'ECONNABORTED' || !error.response)) {
+      console.log(`Retrying registration (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      await delay(RETRY_DELAY);
+      return registerDonor(donorData, retryCount + 1);
     }
     
-    // If it's a validation error (400), return the error message
-    if (error.response && error.response.status === 400) {
-      return {
-        success: false,
-        error: error.response.data.error || 'Validation failed'
-      };
+    // If we've exhausted retries or it's a different error
+    if (error.response) {
+      const errorMessage = error.response.data.message || 'Registration failed. Please try again later.';
+      throw new Error(errorMessage);
+    } else {
+      throw new Error('Network error. Please check your connection and try again.');
     }
-    
-    // For server errors, return a generic error
-    return {
-      success: false,
-      error: 'Failed to register. Please try again later.'
-    };
   }
 };
 
@@ -173,26 +168,32 @@ export const updateRequestStatus = async (donorId, requestId, status) => {
   }
 };
 
-export const getDonors = async (filters = {}) => {
+export const getDonors = async () => {
   try {
-    console.log('Fetching donors with filters:', filters);
-    const response = await api.get('/donors', { params: filters });
-    console.log('Donors API response data:', response.data);
-    
-    // Return the data in a consistent format
-    if (response.data) {
-      return response.data;
-    }
-    
-    return { success: false, data: [] };
+    const response = await api.get('/donors');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching donors:', error);
-    
-    // For all errors, return empty data - no mock donors
-    return { 
-      success: false, 
-      error: error.message || 'Error fetching donors', 
-      data: [] 
-    };
+    console.error('Error fetching donors:', error.message);
+    throw new Error('Failed to fetch donors. Please try again later.');
+  }
+};
+
+export const updateDonor = async (id, donorData) => {
+  try {
+    const response = await api.put(`/donors/${id}`, donorData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating donor:', error.message);
+    throw new Error('Failed to update donor information. Please try again later.');
+  }
+};
+
+export const deleteDonor = async (id) => {
+  try {
+    const response = await api.delete(`/donors/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting donor:', error.message);
+    throw new Error('Failed to delete donor. Please try again later.');
   }
 };
