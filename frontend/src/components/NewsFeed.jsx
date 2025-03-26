@@ -13,8 +13,10 @@ const NewsFeed = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        // Using WHO RSS feed for blood-related news
-        const response = await fetch('https://www.who.int/rss-feeds/news-english.xml');
+        // Using a CORS proxy to access WHO RSS feed
+        const corsProxy = 'https://api.allorigins.win/raw?url=';
+        const whoRssFeed = 'https://www.who.int/rss-feeds/news-english.xml';
+        const response = await fetch(corsProxy + encodeURIComponent(whoRssFeed));
         const data = await response.text();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(data, 'text/xml');
