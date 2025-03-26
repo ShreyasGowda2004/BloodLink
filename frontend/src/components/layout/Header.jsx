@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FaSun, FaMoon, FaBars, FaTimes, FaUser } from 'react-icons/fa';
 import { ThemeContext } from '../../context/ThemeContext';
 import { AuthContext } from '../../context/AuthContext';
+import NewsFeed from '../NewsFeed';
 
 const Header = () => {
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
@@ -74,6 +75,9 @@ const Header = () => {
 
           {/* Right side controls */}
           <div className="flex items-center space-x-4">
+            {/* News Feed */}
+            <NewsFeed />
+
             {/* Dark mode toggle */}
             <button
               onClick={toggleDarkMode}
