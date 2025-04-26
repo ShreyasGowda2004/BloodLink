@@ -72,16 +72,19 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
-          <div>
+                    {/* Contact */}
+                    <div>
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <address className="not-italic">
-              <p className="mb-2">BloodLink</p>
-              <p className="mb-2">Bmsit Boys Hostel, Avalahalli, Yelahanka</p>
-              <p className="mb-2">Bengaluru, Karnataka, India, 560064</p>
-              <p className="mb-2">Email: shreyasgowda1901@gmail.com</p>
-              <p className="mb-2">Phone: +916361943681</p>
-              <p>Owner: Shreyas Gowda</p>
+              <p className="mb-2">Sambhram Institute of Technology</p>
+              <p className="mb-2">Amba Bhavani Temple Road PO</p>
+              <p className="mb-2">MS Palya, Jalahalli East, Vidyaranyapura</p>
+              <p className="mb-2">Bengaluru, Karnataka, India, 560075</p>
+              <p className="mb-2">Email 1: <a href="mailto:lishagowda1901@gmail.com" className="hover:text-red-600">lishagowda1901@gmail.com</a></p>
+              <p className="mb-2">Email 2: <a href="mailto:rohinireddy2004@gmail.com" className="hover:text-red-600">rohinireddy2004@gmail.com</a></p>
+              <p className="mb-2">Phone: <a href="tel:+917259430469" className="hover:text-red-600">+91 7259430469</a></p>
+              <p>Owner 1: Lisha D Gowda</p>
+              <p>Owner 2: Rohini Reddy B</p>
             </address>
           </div>
         </div>
