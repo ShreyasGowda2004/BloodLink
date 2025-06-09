@@ -13,18 +13,22 @@ console.log('Using API base URL:', baseURL);
 // Create an axios instance with the base URL and default headers
 const api = axios.create({
   baseURL,
-  timeout: 30000, // Increase timeout to 30 seconds
+  timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false // Changed to false for cross-origin requests
+  withCredentials: true // Enable credentials for cross-origin requests
 });
 
-// Add a request interceptor for logging
+// Add a request interceptor for logging and auth
 api.interceptors.request.use(
   (config) => {
     console.log(`Making API request to: ${config.url}`);
-    // Add any auth tokens here if needed
+    // Get token from localStorage if it exists
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -36,27 +40,40 @@ api.interceptors.request.use(
 // Add a response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    // Successfully received response
     return response;
   },
   (error) => {
+    // Handle different types of errors
     if (error.code === 'ECONNABORTED') {
       console.error('Request timeout. Please check your connection and try again.');
       return Promise.reject(new Error('Request timeout. Please check your connection and try again.'));
     }
+    
     if (!error.response) {
       console.error('Network error. Please check your connection.');
       return Promise.reject(new Error('Network error. Please check your connection.'));
     }
-    // Handle network errors, timeout errors, etc.
-    console.error('API Error:', error.message || 'Unknown error');
-    
-    console.error('Response status:', error.response.status);
-    console.error('Response data:', error.response.data);
-    
-    console.error('Full error details:', error);
-    
-    return Promise.reject(error);
+
+    // Handle specific HTTP status codes
+    switch (error.response.status) {
+      case 401:
+        // Handle unauthorized - clear token and redirect to login
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return Promise.reject(new Error('Session expired. Please login again.'));
+      
+      case 403:
+        return Promise.reject(new Error('You do not have permission to perform this action.'));
+      
+      case 404:
+        return Promise.reject(new Error('The requested resource was not found.'));
+      
+      case 500:
+        return Promise.reject(new Error('Server error. Please try again later.'));
+      
+      default:
+        return Promise.reject(error.response.data || new Error('An error occurred. Please try again.'));
+    }
   }
 );
 

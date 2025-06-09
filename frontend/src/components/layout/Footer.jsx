@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaWhatsapp, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaWhatsapp, FaPhone, FaEnvelope, FaMapMarkerAlt, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../../context/ThemeContext';
 import { useContext } from 'react';
@@ -14,6 +14,14 @@ const Footer = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const handleInstagramClick = () => {
+    window.open('https://www.instagram.com/bloodlink', '_blank');
+  };
+
+  const handleLinkedInClick = () => {
+    window.open('https://www.linkedin.com/company/bloodlink', '_blank');
+  };
+
   return (
     <footer className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} py-8`}>
       <div className="container mx-auto px-4">
@@ -22,6 +30,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <div className="space-y-3">
+              <p className="font-semibold">BloodLink Owner: Shreyas Gowda</p>
               <p className="flex items-center">
                 <FaPhone className="mr-2" />
                 <a href="tel:+916361943681" className="hover:text-red-600 transition-colors">
@@ -30,13 +39,17 @@ const Footer = () => {
               </p>
               <p className="flex items-center">
                 <FaEnvelope className="mr-2" />
-                <a href="mailto:support@bloodlink.com" className="hover:text-red-600 transition-colors">
-                  support@bloodlink.com
+                <a href="mailto:shreyasgowda1901@gmail.com" className="hover:text-red-600 transition-colors">
+                  shreyasgowda1901@gmail.com
                 </a>
               </p>
               <p className="flex items-center">
                 <FaMapMarkerAlt className="mr-2" />
-                <span>Bangalore, Karnataka, India</span>
+                <span>BMS Institute of Technology and Management</span>
+              </p>
+              <p className="ml-6 text-sm">
+                Doddaballapur Main Rd, Avalahalli, Yelahanka,<br />
+                Bengaluru, Karnataka 560064
               </p>
             </div>
           </div>
@@ -72,6 +85,24 @@ const Footer = () => {
                 aria-label="Contact on WhatsApp"
               >
                 <FaWhatsapp className="text-2xl" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleInstagramClick}
+                className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-colors"
+                aria-label="Follow on Instagram"
+              >
+                <FaInstagram className="text-2xl" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleLinkedInClick}
+                className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-colors"
+                aria-label="Connect on LinkedIn"
+              >
+                <FaLinkedin className="text-2xl" />
               </motion.button>
             </div>
           </div>
