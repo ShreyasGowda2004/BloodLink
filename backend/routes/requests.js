@@ -1,42 +1,33 @@
 // server/routes/requests.js
 const express = require('express');
+const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 const {
-  getBloodRequests,
-  getBloodRequestById,
-  createBloodRequest,
-  sendRequestToDonors,
-  getBloodRequestStatus,
-  sendRequestToSpecificDonor,
-  confirmDonation,
-  createTestBloodRequest
+  createRequest,
+  getRequests,
+  getRequestById,
+  updateRequest,
+  deleteRequest,
+  getUserRequests,
+  getRequestStatus,
+  sendRequestToDonor,
+  respondToRequest,
+  updateDonationStatus
 } = require('../controllers/requestController');
 
-const router = express.Router();
+// Blood request routes
+router.post('/', protect, createRequest);
+router.get('/', getRequests);
+router.get('/user', protect, getUserRequests);
+router.get('/status', getRequestStatus);
+router.get('/:id', getRequestById);
+router.put('/:id', protect, updateRequest);
+router.delete('/:id', protect, deleteRequest);
 
-// Get all blood requests and create a new one
-router.route('/')
-  .get(getBloodRequests)
-  .post(createBloodRequest);
-
-// Check blood request status (via query params: phone, bloodType)
-// IMPORTANT: This must come BEFORE the /:id routes to avoid conflicts
-router.get('/status', getBloodRequestStatus);
-
-// Create a test blood request with sample data
-router.post('/test', createTestBloodRequest);
-
-// Get single blood request by ID
-router.route('/:id')
-  .get(getBloodRequestById);
-
-// Send a blood request to matching donors
-router.post('/:id/send-to-donors', sendRequestToDonors);
-
-// Confirm a donation
-router.post('/:id/confirm-donation', confirmDonation);
-
-// Send blood request to a specific donor
-router.post('/:requestId/donors/:donorId', sendRequestToSpecificDonor);
+// Donor interaction routes
+router.post('/:id/donors/:donorId/notify', protect, sendRequestToDonor);
+router.post('/:id/respond', protect, respondToRequest);
+router.put('/:id/donors/:donorId/status', protect, updateDonationStatus);
 
 // Export the router
 module.exports = router;
