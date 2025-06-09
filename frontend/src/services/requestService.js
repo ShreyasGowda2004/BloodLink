@@ -72,17 +72,16 @@ export const getUserBloodRequests = async () => {
 // Get blood request status by phone number and blood type
 export const getBloodRequestStatus = async (phone, bloodType) => {
   try {
-    console.log(`Checking blood request status for phone: ${phone}, bloodType: ${bloodType}`);
-    
-    if (!phone || phone.length !== 10 || !/^\d+$/.test(phone)) {
+    if (!phone || !bloodType) {
+      console.error('Phone and blood type are required');
       return {
         success: false,
-        error: 'Please enter a valid 10-digit phone number',
+        message: 'Phone and blood type are required',
         data: []
       };
     }
 
-    const response = await api.get('/api/blood-requests/status', {
+    const response = await api.get('/blood-requests/status', {
       params: {
         phone,
         bloodType
