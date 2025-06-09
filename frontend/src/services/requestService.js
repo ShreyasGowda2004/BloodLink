@@ -129,7 +129,8 @@ export const updateDonationStatus = async (requestId, donorId, status) => {
     throw error;
   }
 };
-
+// Remove the loose code block below
+// No code should appear here
 const response = await api.get('/api/blood-requests/status', {
   params: {
     phone,
