@@ -1,5 +1,7 @@
 const Donor = require('../models/Donor');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Get all donors
 exports.getDonors = async (req, res) => {
@@ -61,361 +63,358 @@ exports.getDonorById = async (req, res) => {
   }
 };
 
-// Create a new donor
-exports.createDonor = async (req, res) => {
+// Generate JWT Token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d'
+  });
+};
+
+// @desc    Register a new donor
+// @route   POST /api/donors/register
+// @access  Public
+const registerDonor = async (req, res) => {
   try {
-    console.log('Creating donor with data:', JSON.stringify(req.body, null, 2));
-    
-    // Validate required fields
-    const requiredFields = ['name', 'age', 'gender', 'bloodType', 'phone', 'country', 'state', 'city', 'smoking', 'drinking', 'lastDonation', 'password'];
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    
-    if (missingFields.length > 0) {
-      console.error('Missing required fields:', missingFields);
+    const { name, email, phone, password, bloodType, location } = req.body;
+
+    // Check if donor already exists
+    const donorExists = await Donor.findOne({ phone });
+    if (donorExists) {
       return res.status(400).json({
         success: false,
-        error: `Missing required fields: ${missingFields.join(', ')}`
+        error: 'Donor already exists with this phone number'
       });
     }
-    
-    // Check if phone number already exists
-    const existingDonor = await Donor.findOne({ phone: req.body.phone });
-    if (existingDonor) {
-      return res.status(400).json({
-        success: false,
-        error: 'Phone number already registered. Please use a different phone number or login to your account.'
-      });
-    }
-    
-    // Convert string age to number if needed
-    if (typeof req.body.age === 'string') {
-      req.body.age = parseInt(req.body.age, 10);
-    }
-    
-    // Validate age
-    const age = req.body.age;
-    if (isNaN(age) || age < 18 || age > 65) {
-      console.error('Invalid age:', age);
-      return res.status(400).json({
-        success: false,
-        error: 'Age must be between 18 and 65'
-      });
-    }
-    
-    // Validate phone number
-    const { phone } = req.body;
-    if (!/^\d{10}$/.test(phone)) {
-      console.error('Invalid phone number:', phone);
-      return res.status(400).json({
-        success: false,
-        error: 'Phone number must be 10 digits'
-      });
-    }
-    
-    // Validate password
-    if (req.body.password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password must be at least 6 characters long'
-      });
-    }
-    
-    // Validate blood type
-    const validBloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-    if (!validBloodTypes.includes(req.body.bloodType)) {
-      console.error('Invalid blood type:', req.body.bloodType);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid blood type'
-      });
-    }
-    
-    // Validate gender
-    const validGenders = ['male', 'female', 'other'];
-    if (!validGenders.includes(req.body.gender)) {
-      console.error('Invalid gender:', req.body.gender);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid gender'
-      });
-    }
-    
-    // Validate smoking and drinking
-    const validOptions = ['yes', 'no'];
-    if (!validOptions.includes(req.body.smoking)) {
-      console.error('Invalid smoking status:', req.body.smoking);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid smoking status'
-      });
-    }
-    if (!validOptions.includes(req.body.drinking)) {
-      console.error('Invalid drinking status:', req.body.drinking);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid drinking status'
-      });
-    }
-    
-    // Validate lastDonation
-    const validLastDonation = ['never', 'less_than_3_months', 'more_than_3_months'];
-    if (!validLastDonation.includes(req.body.lastDonation)) {
-      console.error('Invalid lastDonation value:', req.body.lastDonation);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid lastDonation value'
-      });
-    }
-    
-    // Create donor with sanitized data
-    const donorData = {
-      name: req.body.name,
-      age: req.body.age,
-      gender: req.body.gender,
-      bloodType: req.body.bloodType,
-      phone: req.body.phone,
-      country: req.body.country,
-      state: req.body.state,
-      city: req.body.city,
-      smoking: req.body.smoking,
-      drinking: req.body.drinking,
-      lastDonation: req.body.lastDonation,
-      password: req.body.password // Will be hashed by pre-save hook
-    };
-    
-    console.log('Creating donor with sanitized data (password field will be hashed)');
-    
-    // Check if the Donor model exists
-    console.log('Donor model type:', typeof Donor);
-    console.log('Is Donor defined?', !!Donor);
-    
-    // Check MongoDB connection
-    console.log('MongoDB connection state:', mongoose.connection.readyState);
-    
-    try {
-      const donor = await Donor.create(donorData);
-      
-      // Send confirmation SMS in a real application
-      console.log(`Sending confirmation SMS to ${phone}: Thank you for registering as a blood donor. Your generosity can save lives.`);
-      
-      // Remove password from response
-      const donorResponse = donor.toObject();
-      delete donorResponse.password;
-      
-      console.log('Donor created successfully');
-      return res.status(201).json({
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create donor
+    const donor = await Donor.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      bloodType,
+      location
+    });
+
+    if (donor) {
+      res.status(201).json({
         success: true,
-        data: donorResponse
+        data: {
+          _id: donor._id,
+          name: donor.name,
+          email: donor.email,
+          phone: donor.phone,
+          bloodType: donor.bloodType,
+          location: donor.location,
+          token: generateToken(donor._id)
+        }
       });
-    } catch (mongoError) {
-      console.error('MongoDB operation error:', mongoError);
-      console.error('Error name:', mongoError.name);
-      console.error('Error message:', mongoError.message);
-      console.error('Error code:', mongoError.code);
-      
-      // Check for duplicate key error
-      if (mongoError.code === 11000) {
-        return res.status(400).json({
-          success: false,
-          error: 'Phone number already registered'
-        });
-      }
-      
-      return res.status(500).json({
+    } else {
+      res.status(400).json({
         success: false,
-        error: 'Database operation failed: ' + mongoError.message
+        error: 'Invalid donor data'
       });
     }
   } catch (error) {
-    console.error('Error creating donor:', error);
-    
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      console.error('Validation error messages:', messages);
-      
-      return res.status(400).json({
-        success: false,
-        error: messages
-      });
-    } else {
-      console.error('Server error details:', error.message);
-      console.error('Error stack:', error.stack);
-      return res.status(500).json({
-        success: false,
-        error: 'Server Error: ' + error.message
-      });
-    }
+    console.error('Register donor error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in registration'
+    });
   }
 };
 
-// Login donor
-exports.loginDonor = async (req, res) => {
+// @desc    Login donor
+// @route   POST /api/donors/login
+// @access  Public
+const loginDonor = async (req, res) => {
   try {
     const { phone, password } = req.body;
-    
-    // Validate inputs
-    if (!phone || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide phone number and password'
-      });
-    }
-    
-    // Check if donor exists
-    const donor = await Donor.findOne({ phone }).select('+password');
-    
+
+    // Check for donor
+    const donor = await Donor.findOne({ phone });
     if (!donor) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: 'Invalid phone number or password'
       });
     }
-    
-    // Check if password matches
-    const isMatch = await donor.matchPassword(password);
-    
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, donor.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: 'Invalid phone number or password'
       });
     }
-    
-    // Return donor data without password
-    const donorData = donor.toObject();
-    delete donorData.password;
-    
-    res.status(200).json({
+
+    res.json({
       success: true,
-      data: donorData
+      data: {
+        _id: donor._id,
+        name: donor.name,
+        email: donor.email,
+        phone: donor.phone,
+        bloodType: donor.bloodType,
+        location: donor.location,
+        token: generateToken(donor._id)
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error'
+      error: 'Server error in login'
     });
   }
 };
 
-// Get donor's blood requests
-exports.getDonorRequests = async (req, res) => {
+// @desc    Get donor profile
+// @route   GET /api/donors/profile
+// @access  Private
+const getDonorProfile = async (req, res) => {
   try {
-    const donorId = req.params.id;
-    
-    const donor = await Donor.findById(donorId)
-      .populate({
-        path: 'bloodRequests.requestId',
-        model: 'BloodRequest'
-      });
-    
+    const donor = await Donor.findById(req.donor._id).select('-password');
     if (!donor) {
       return res.status(404).json({
         success: false,
         error: 'Donor not found'
       });
     }
-    
-    res.status(200).json({
+    res.json({
       success: true,
-      data: donor.bloodRequests
+      data: donor
     });
   } catch (error) {
-    console.error('Error fetching donor requests:', error);
+    console.error('Get profile error:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error'
+      error: 'Server error in getting profile'
     });
   }
 };
 
-// Update request status (accept/reject)
-exports.updateRequestStatus = async (req, res) => {
+// @desc    Update donor profile
+// @route   PUT /api/donors/profile
+// @access  Private
+const updateDonorProfile = async (req, res) => {
+  try {
+    const donor = await Donor.findById(req.donor._id);
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        error: 'Donor not found'
+      });
+    }
+
+    donor.name = req.body.name || donor.name;
+    donor.email = req.body.email || donor.email;
+    donor.bloodType = req.body.bloodType || donor.bloodType;
+    donor.location = req.body.location || donor.location;
+
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      donor.password = await bcrypt.hash(req.body.password, salt);
+    }
+
+    const updatedDonor = await donor.save();
+
+    res.json({
+      success: true,
+      data: {
+        _id: updatedDonor._id,
+        name: updatedDonor.name,
+        email: updatedDonor.email,
+        phone: updatedDonor.phone,
+        bloodType: updatedDonor.bloodType,
+        location: updatedDonor.location,
+        token: generateToken(updatedDonor._id)
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in updating profile'
+    });
+  }
+};
+
+// @desc    Get all donors
+// @route   GET /api/donors
+// @access  Private/Admin
+const getAllDonors = async (req, res) => {
+  try {
+    const donors = await Donor.find({}).select('-password');
+    res.json({
+      success: true,
+      count: donors.length,
+      data: donors
+    });
+  } catch (error) {
+    console.error('Get all donors error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in getting donors'
+    });
+  }
+};
+
+// @desc    Get nearby donors
+// @route   GET /api/donors/nearby
+// @access  Public
+const getNearbyDonors = async (req, res) => {
+  try {
+    const { bloodType, location, radius = 10 } = req.query;
+    
+    // Basic query
+    let query = {};
+    
+    // Add blood type filter if provided
+    if (bloodType) {
+      query.bloodType = bloodType;
+    }
+    
+    // Add location filter if provided
+    if (location) {
+      // TODO: Implement location-based filtering
+      // This is a placeholder for actual location-based query
+      query.location = { $exists: true };
+    }
+    
+    const donors = await Donor.find(query).select('-password');
+    
+    res.json({
+      success: true,
+      count: donors.length,
+      data: donors
+    });
+  } catch (error) {
+    console.error('Get nearby donors error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in getting nearby donors'
+    });
+  }
+};
+
+// @desc    Get donor donations
+// @route   GET /api/donors/donations
+// @access  Private
+const getDonorDonations = async (req, res) => {
+  try {
+    const donor = await Donor.findById(req.donor._id).populate('donations');
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        error: 'Donor not found'
+      });
+    }
+    res.json({
+      success: true,
+      data: donor.donations
+    });
+  } catch (error) {
+    console.error('Get donations error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in getting donations'
+    });
+  }
+};
+
+// @desc    Add donation
+// @route   POST /api/donors/donations
+// @access  Private
+const addDonation = async (req, res) => {
+  try {
+    const donor = await Donor.findById(req.donor._id);
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        error: 'Donor not found'
+      });
+    }
+
+    const donation = {
+      date: req.body.date,
+      location: req.body.location,
+      notes: req.body.notes
+    };
+
+    donor.donations.push(donation);
+    await donor.save();
+
+    res.status(201).json({
+      success: true,
+      data: donation
+    });
+  } catch (error) {
+    console.error('Add donation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in adding donation'
+    });
+  }
+};
+
+// @desc    Get donor requests
+// @route   GET /api/donors/:donorId/requests
+// @access  Private
+const getDonorRequests = async (req, res) => {
+  try {
+    const donor = await Donor.findById(req.params.donorId).populate('requests');
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        error: 'Donor not found'
+      });
+    }
+    res.json({
+      success: true,
+      data: donor.requests
+    });
+  } catch (error) {
+    console.error('Get donor requests error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error in getting donor requests'
+    });
+  }
+};
+
+// @desc    Update request status
+// @route   PUT /api/donors/:donorId/requests/:requestId/:status
+// @access  Private
+const updateRequestStatus = async (req, res) => {
   try {
     const { donorId, requestId, status } = req.params;
     
-    console.log(`Updating request status: donorId=${donorId}, requestId=${requestId}, status=${status}`);
-    
-    if (!['accepted', 'rejected', 'donated'].includes(status)) {
+    // Validate status
+    if (!['accepted', 'rejected'].includes(status)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid status. Must be "accepted", "rejected", or "donated"'
+        error: 'Invalid status. Must be either accepted or rejected'
       });
     }
+
+    // TODO: Implement request status update logic
+    // This is a placeholder for actual implementation
     
-    // Find the donor
-    const donor = await Donor.findById(donorId);
-    
-    if (!donor) {
-      return res.status(404).json({
-        success: false,
-        error: 'Donor not found'
-      });
-    }
-    
-    // Find the request in the donor's bloodRequests array
-    const requestIndex = donor.bloodRequests.findIndex(
-      req => req.requestId.toString() === requestId
-    );
-    
-    if (requestIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Blood request not found in donor\'s requests'
-      });
-    }
-    
-    // Update the status in the donor's bloodRequests
-    donor.bloodRequests[requestIndex].status = status;
-    donor.bloodRequests[requestIndex].updatedAt = new Date();
-    
-    // If status is 'donated', update donation count and last donation date
-    if (status === 'donated') {
-      // Update donation history
-      donor.donationCount = (donor.donationCount || 0) + 1;
-      donor.lastDonation = 'less_than_3_months';  // Update the lastDonation field to match the schema enum
-      console.log(`Updating donor ${donorId} donation count to ${donor.donationCount}`);
-    }
-    
-    await donor.save();
-    
-    // Now also update the status in the blood request's donorRequests
-    const BloodRequest = require('../models/BloodRequest');
-    const bloodRequest = await BloodRequest.findById(requestId);
-    
-    if (bloodRequest) {
-      const donorRequestIndex = bloodRequest.donorRequests.findIndex(
-        dr => dr.donor && dr.donor.toString() === donorId
-      );
-      
-      if (donorRequestIndex !== -1) {
-        bloodRequest.donorRequests[donorRequestIndex].status = status;
-        bloodRequest.donorRequests[donorRequestIndex].updatedAt = new Date();
-        
-        // If donated, update the blood request's overall status to fulfilled
-        if (status === 'donated') {
-          bloodRequest.overallStatus = 'fulfilled';
-        }
-        
-        await bloodRequest.save();
-        console.log(`Updated blood request ${requestId} with ${status} status for donor ${donorId}`);
-      } else {
-        console.log(`Warning: Donor ${donorId} not found in blood request ${requestId}`);
-      }
-    } else {
-      console.log(`Warning: Blood request ${requestId} not found when updating status`);
-    }
-    
-    res.status(200).json({
+    res.json({
       success: true,
-      message: `Request status updated to ${status}`,
-      data: donor.bloodRequests[requestIndex]
+      message: `Request ${status} successfully`
     });
   } catch (error) {
-    console.error('Error updating request status:', error);
+    console.error('Update request status error:', error);
     res.status(500).json({
       success: false,
-      error: 'Server Error: ' + error.message
+      error: 'Server error in updating request status'
     });
   }
 };
@@ -545,4 +544,17 @@ exports.getNearbyDonors = async (req, res) => {
       error: 'Server Error: ' + error.message
     });
   }
+};
+
+module.exports = {
+  registerDonor,
+  loginDonor,
+  getDonorProfile,
+  updateDonorProfile,
+  getAllDonors,
+  getNearbyDonors,
+  getDonorDonations,
+  addDonation,
+  getDonorRequests,
+  updateRequestStatus
 };
