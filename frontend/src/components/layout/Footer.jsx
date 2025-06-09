@@ -1,36 +1,43 @@
-import { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaHeart } from 'react-icons/fa';
+import React from 'react';
+import { FaWhatsapp, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import { ThemeContext } from '../../context/ThemeContext';
+import { useContext } from 'react';
 
 const Footer = () => {
   const { darkMode } = useContext(ThemeContext);
-  const currentYear = new Date().getFullYear();
+
+  const handleWhatsAppClick = () => {
+    const phoneNumber = '916361943681';
+    const message = 'Hello! I need assistance with blood donation.';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   return (
-    <footer className={`${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-700'} pt-12 pb-8`}>
+    <footer className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} py-8`}>
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* About */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Contact Information */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">About BloodLink</h3>
-            <p className="mb-4">
-              BloodLink is a platform dedicated to connecting blood donors with those in need, 
-              making the donation process easier and more accessible for everyone.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-red-600 transition-colors">
-                <FaFacebook size={20} />
-              </a>
-              <a href="#" className="hover:text-red-600 transition-colors">
-                <FaTwitter size={20} />
-              </a>
-              <a href="#" className="hover:text-red-600 transition-colors">
-                <FaInstagram size={20} />
-              </a>
-              <a href="#" className="hover:text-red-600 transition-colors">
-                <FaLinkedin size={20} />
-              </a>
+            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+            <div className="space-y-3">
+              <p className="flex items-center">
+                <FaPhone className="mr-2" />
+                <a href="tel:+916361943681" className="hover:text-red-600 transition-colors">
+                  +91 6361943681
+                </a>
+              </p>
+              <p className="flex items-center">
+                <FaEnvelope className="mr-2" />
+                <a href="mailto:support@bloodlink.com" className="hover:text-red-600 transition-colors">
+                  support@bloodlink.com
+                </a>
+              </p>
+              <p className="flex items-center">
+                <FaMapMarkerAlt className="mr-2" />
+                <span>Bangalore, Karnataka, India</span>
+              </p>
             </div>
           </div>
 
@@ -39,63 +46,56 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="hover:text-red-600 transition-colors">Home</Link>
+                <a href="/about" className="hover:text-red-600 transition-colors">About Us</a>
               </li>
               <li>
-                <Link to="/register" className="hover:text-red-600 transition-colors">Become a Donor</Link>
+                <a href="/donate" className="hover:text-red-600 transition-colors">Donate Blood</a>
               </li>
               <li>
-                <Link to="/request" className="hover:text-red-600 transition-colors">Request Blood</Link>
+                <a href="/request" className="hover:text-red-600 transition-colors">Request Blood</a>
               </li>
               <li>
-                <Link to="/login" className="hover:text-red-600 transition-colors">Login</Link>
+                <a href="/faq" className="hover:text-red-600 transition-colors">FAQ</a>
               </li>
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Social Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="hover:text-red-600 transition-colors">Donation Guidelines</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-red-600 transition-colors">Blood Types</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-red-600 transition-colors">FAQs</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-red-600 transition-colors">Blog</a>
-              </li>
-            </ul>
-          </div>
-
-                    {/* Contact */}
-                    <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-            <address className="not-italic">
-              <p className="mb-2">Sambhram Institute of Technology</p>
-              <p className="mb-2">Amba Bhavani Temple Road PONear, Airforce Station</p>
-              <p className="mb-2">MS Palya, Jalahalli East, Vidyaranyapura</p>
-              <p className="mb-2">Bengaluru, Karnataka, India, 560075</p>
-              <p className="mb-2">Email 1: <a href="mailto:lishagowda1901@gmail.com" className="hover:text-red-600">lishagowda1901@gmail.com</a></p>
-              <p className="mb-2">Email 2: <a href="mailto:rohinireddy2004@gmail.com" className="hover:text-red-600">rohinireddy2004@gmail.com</a></p>
-              <p className="mb-2">Phone: <a href="tel:+917259430469" className="hover:text-red-600">+91 7259430469</a></p>
-              <p>Owner 1: Lisha D Gowda</p>
-              <p>Owner 2: Rohini Reddy B</p>
-            </address>
+            <h3 className="text-lg font-semibold mb-4">Connect With Us</h3>
+            <div className="flex space-x-4">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleWhatsAppClick}
+                className="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition-colors"
+                aria-label="Contact on WhatsApp"
+              >
+                <FaWhatsapp className="text-2xl" />
+              </motion.button>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p>© {currentYear} BloodLink. All rights reserved.</p>
-          <p className="mt-4 md:mt-0 flex items-center">
-            Made with <FaHeart className="mx-1 text-red-600" /> for a better world
-          </p>
+        {/* Copyright */}
+        <div className="mt-8 pt-8 border-t border-gray-700 text-center">
+          <p>&copy; {new Date().getFullYear()} BloodLink. All rights reserved.</p>
         </div>
       </div>
+
+      {/* Floating WhatsApp Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={handleWhatsAppClick}
+        className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-50 flex items-center space-x-2"
+        aria-label="Contact on WhatsApp"
+      >
+        <FaWhatsapp className="text-2xl" />
+        <span className="hidden sm:inline">Need Help?</span>
+      </motion.button>
     </footer>
   );
 };
