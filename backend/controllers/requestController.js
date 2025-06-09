@@ -916,3 +916,93 @@ exports.createTestBloodRequest = async (req, res) => {
 
 // Using a simple approach - just export the exports object
 module.exports = exports;
+
+// Update donation status for a specific donor on a blood request
+exports.updateDonationStatus = async (req, res) => {
+  try {
+    const { id, donorId } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Status is required'
+      });
+    }
+    
+    // Validate status value
+    const validStatuses = ['pending', 'accepted', 'rejected', 'donated', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
+    
+    console.log(`Updating donation status for request ${id}, donor ${donorId} to ${status}`);
+    
+    // Find the blood request
+    const bloodRequest = await BloodRequest.findById(id);
+    
+    if (!bloodRequest) {
+      return res.status(404).json({
+        success: false,
+        error: 'Blood request not found'
+      });
+    }
+    
+    // Find the donor request within the blood request
+    const donorRequest = bloodRequest.donorRequests.find(
+      dr => dr.donor && dr.donor.toString() === donorId
+    );
+    
+    if (!donorRequest) {
+      return res.status(404).json({
+        success: false,
+        error: 'This donor is not associated with this blood request'
+      });
+    }
+    
+    // Update the donation status
+    donorRequest.status = status;
+    donorRequest.updatedAt = new Date();
+    
+    // Save the updated blood request
+    await bloodRequest.save();
+    
+    // Update the donor's record
+    const donor = await Donor.findById(donorId);
+    
+    if (donor) {
+      // Find the corresponding request in the donor's bloodRequests array
+      const donorBloodRequest = donor.bloodRequests.find(
+        br => br.requestId && br.requestId.toString() === id
+      );
+      
+      if (donorBloodRequest) {
+        donorBloodRequest.status = status;
+        donorBloodRequest.updatedAt = new Date();
+        
+        // If status is 'donated', increment donation count
+        if (status === 'donated') {
+          donor.donationCount = (donor.donationCount || 0) + 1;
+          donor.lastDonation = new Date();
+        }
+        
+        await donor.save();
+      }
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: `Donation status updated to ${status}`,
+      data: bloodRequest
+    });
+  } catch (error) {
+    console.error('Error updating donation status:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error: ' + error.message
+    });
+  }
+};
