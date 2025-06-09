@@ -3,8 +3,8 @@ import axios from 'axios';
 
 // Determine environment and set appropriate API base URL
 const isDevelopment = import.meta.env.DEV;
-const productionBackendURL = 'https://bloodlink-b6fl.onrender.com/api';
-const developmentBackendURL = 'http://localhost:5000/api';
+const productionBackendURL = 'https://bloodlink-b6fl.onrender.com';
+const developmentBackendURL = 'http://localhost:5000';
 
 // Define API base URL using environment variables or fallback to appropriate URL based on environment
 const baseURL = import.meta.env.VITE_API_URL || (isDevelopment ? developmentBackendURL : productionBackendURL);
@@ -21,8 +21,13 @@ const api = axios.create({
 });
 
 // Add a request interceptor for logging and auth
+// Add a request interceptor for logging and auth
 api.interceptors.request.use(
   (config) => {
+    // Add /api prefix to all requests
+    if (!config.url.startsWith('/api')) {
+      config.url = `/api${config.url}`;
+    }
     console.log(`Making API request to: ${config.url}`);
     // Get token from localStorage if it exists
     const token = localStorage.getItem('token');

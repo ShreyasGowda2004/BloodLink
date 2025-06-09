@@ -82,7 +82,7 @@ export const getBloodRequestStatus = async (phone, bloodType) => {
       };
     }
 
-    const response = await api.get('/blood-requests/status', {
+    const response = await api.get('/api/blood-requests/status', {
       params: {
         phone,
         bloodType
@@ -129,3 +129,10 @@ export const updateDonationStatus = async (requestId, donorId, status) => {
     throw error;
   }
 };
+
+const response = await api.get('/api/blood-requests/status', {
+  params: {
+    phone,
+    bloodType
+  }
+});
