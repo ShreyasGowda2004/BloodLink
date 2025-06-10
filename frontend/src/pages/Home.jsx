@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import DonationStats from '../components/DonationStats';
 import AwarenessQuotes from '../components/AwarenessQuotes';
+import GlobeVisualization from '../components/globe/GlobeVisualization';
 
 const Home = () => {
   const { darkMode } = useContext(ThemeContext);
