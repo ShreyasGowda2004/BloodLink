@@ -77,11 +77,11 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <address className="not-italic">
               <p className="mb-2">BloodLink</p>
-              <p>Owner:Shreyas Gowda</p>
+              <p>Owner: Shreyas Gowda</p>
               <p className="mb-2">BMS Institute of Technology and Management</p>
               <p className="mb-2">Doddaballapur Main Rd, Avalahalli, Yelahanka</p>
               <p className="mb-2">Bengaluru, Karnataka, India, 560064</p>
-              <p className="mb-2">Email: <a href="mailto:shreyasgowdagowda1901@gmail.com" className="hover:text-red-600">shreyasgowda1901@gmail.com</a></p>
+              <p className="mb-2">Email: <a href="mailto:shreyasgowda1901@gmail.com" className="hover:text-red-600">shreyasgowda1901@gmail.com</a></p>
               <p className="mb-2">Phone: <a href="tel:+916361943681" className="hover:text-red-600">+9163619436891</a></p>
               
               
