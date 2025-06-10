@@ -1,34 +1,43 @@
 // server/routes/donors.js
 const express = require('express');
-const router = express.Router();
 const {
-  registerDonor,
+  getDonors,
+  getDonorById,
+  createDonor,
+  updateDonor,
+  deleteDonor,
   loginDonor,
-  getDonorProfile,
-  updateDonorProfile,
-  getAllDonors,
-  getNearbyDonors,
-  getDonorDonations,
-  addDonation,
   getDonorRequests,
-  updateRequestStatus
+  updateRequestStatus,
+  getDonorsByBloodType,
+  getNearbyDonors
 } = require('../controllers/donorController');
-const { protect, admin } = require('../middleware/authMiddleware');
+const router = express.Router();
 
-// Public routes
-router.post('/register', registerDonor);
+// Login route
 router.post('/login', loginDonor);
-router.get('/nearby', getNearbyDonors);
 
-// Protected routes
-router.get('/profile', protect, getDonorProfile);
-router.put('/profile', protect, updateDonorProfile);
-router.get('/donations', protect, getDonorDonations);
-router.post('/donations', protect, addDonation);
-router.get('/:donorId/requests', protect, getDonorRequests);
-router.put('/:donorId/requests/:requestId/:status', protect, updateRequestStatus);
+// Get all donors and create new donor
+router.route('/')
+  .get(getDonors)
+  .post(createDonor);
 
-// Admin routes
-router.get('/', protect, admin, getAllDonors);
+// Get, update and delete donor by ID
+router.route('/:id')
+  .get(getDonorById)
+  .put(updateDonor)
+  .delete(deleteDonor);
+
+// Get donor blood requests
+router.get('/:id/requests', getDonorRequests);
+
+// Update blood request status
+router.put('/:donorId/requests/:requestId/:status', updateRequestStatus);
+
+// Get donors by blood type
+router.get('/bloodtype/:bloodType', getDonorsByBloodType);
+
+// Get nearby donors
+router.get('/nearby/:lat/:lng/:distance', getNearbyDonors);
 
 module.exports = router;

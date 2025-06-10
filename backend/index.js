@@ -1,7 +1,6 @@
 // server/index.js
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
@@ -20,21 +19,45 @@ console.log('Environment variables loaded:', {
   MONGODB_URI: process.env.MONGODB_URI ? 'Configured' : 'Not configured'
 });
 
-// Connect to MongoDB
-connectDB();
-
+// Initialize Express
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: ['https://blood-link-pi.vercel.app', 'http://localhost:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  // Dynamic origin function to handle different deployment URLs
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Fixed list of allowed origins
+    const allowedOrigins = [
+      'https://blood-link-pi.vercel.app', 
+      'https://blood-link-q0wm.onrender.com', 
+      'http://localhost:3000', 
+      'http://localhost:5173',
+      'https://blood-link.vercel.app'
+    ];
+    
+    // Check if origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    // Allow any Vercel subdomain containing our project name patterns
+    if (
+      origin.includes('.vercel.app') && 
+      (origin.includes('blood-link') || origin.includes('shreyasgowda2004s-projects'))
+    ) {
+      return callback(null, true);
+    }
+    
+    // Disallow other origins
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
 }));
-
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Debug middleware
 app.use((req, res, next) => {
@@ -58,15 +81,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api/blood-requests', requestRoutes);
+// API Routes
 app.use('/api/donors', donorRoutes);
+app.use('/api/requests', requestRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    env: process.env.NODE_ENV,
+    mongodb: process.env.MONGODB_URI ? 'Configured' : 'Not configured'
+  });
 });
 
 // Root route handler for API server
@@ -75,9 +103,9 @@ app.get('/', (req, res) => {
     message: 'BloodLink API Server',
     version: '1.0.0',
     endpoints: {
-      health: '/health',
+      health: '/api/health',
       donors: '/api/donors',
-      requests: '/api/blood-requests',
+      requests: '/api/requests',
       otp: '/api/otp'
     }
   });
@@ -95,7 +123,7 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ 
     error: 'Something went wrong!', 
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: err.message || 'No error message available'
   });
 });
 
@@ -130,8 +158,12 @@ const startServer = async () => {
     console.log('Starting server...');
     console.log('Attempting to connect to MongoDB...');
     
+    // Connect to MongoDB
+    await connectDB();
+    console.log('MongoDB connection successful');
+    
     // Try starting the server with initial PORT
-    let port = process.env.PORT || 5000;
+    let port = PORT;
     let started = false;
     let attempts = 0;
     const maxAttempts = 10;

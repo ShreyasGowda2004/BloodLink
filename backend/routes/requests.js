@@ -1,32 +1,42 @@
 // server/routes/requests.js
 const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
 const {
-  createBloodRequest,  // Changed from createRequest
-  getBloodRequests,    // Changed from getRequests
-  getBloodRequestById, // Changed from getRequestById
-  updateRequest,
-  deleteRequest,
-  getBloodRequestStatus, // Changed from getRequestStatus
-  sendRequestToSpecificDonor, // Changed from sendRequestToDonor
-  confirmDonation,     // Changed from respondToRequest
-  updateDonationStatus
+  getBloodRequests,
+  getBloodRequestById,
+  createBloodRequest,
+  sendRequestToDonors,
+  getBloodRequestStatus,
+  sendRequestToSpecificDonor,
+  confirmDonation,
+  createTestBloodRequest
 } = require('../controllers/requestController');
 
-// Blood request routes
-router.post('/', protect, createBloodRequest);
-router.get('/', getBloodRequests);
-router.get('/user', protect, getBloodRequests); // Changed from getUserRequests
-router.get('/status', getBloodRequestStatus);
-router.get('/:id', getBloodRequestById);
-router.put('/:id', protect, updateRequest);
-router.delete('/:id', protect, deleteRequest);
+const router = express.Router();
 
-// Donor interaction routes
-router.post('/:id/donors/:donorId/notify', protect, sendRequestToSpecificDonor);
-router.post('/:id/respond', protect, confirmDonation);
-router.put('/:id/donors/:donorId/status', protect, updateDonationStatus);
+// Get all blood requests and create a new one
+router.route('/')
+  .get(getBloodRequests)
+  .post(createBloodRequest);
+
+// Check blood request status (via query params: phone, bloodType)
+// IMPORTANT: This must come BEFORE the /:id routes to avoid conflicts
+router.get('/status', getBloodRequestStatus);
+
+// Create a test blood request with sample data
+router.post('/test', createTestBloodRequest);
+
+// Get single blood request by ID
+router.route('/:id')
+  .get(getBloodRequestById);
+
+// Send a blood request to matching donors
+router.post('/:id/send-to-donors', sendRequestToDonors);
+
+// Confirm a donation
+router.post('/:id/confirm-donation', confirmDonation);
+
+// Send blood request to a specific donor
+router.post('/:requestId/donors/:donorId', sendRequestToSpecificDonor);
 
 // Export the router
 module.exports = router;

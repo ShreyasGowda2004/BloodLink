@@ -25,14 +25,15 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
+        // Don't rewrite the path - keep the /api prefix
+        // rewrite: (path) => path.replace(/^\/api/, '')
       },
     },
   },
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV === 'development',
-    minify: 'esbuild',
-    target: 'esnext',
+    minify: 'esbuild', // Use esbuild for minification (built into Vite)
     rollupOptions: {
       output: {
         manualChunks: {
@@ -44,14 +45,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'axios', 'framer-motion'],
-    esbuildOptions: {
-      target: 'esnext',
-    },
-  },
-  esbuild: {
-    target: 'esnext',
-    supported: {
-      'top-level-await': true,
-    },
   },
 });

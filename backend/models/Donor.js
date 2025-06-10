@@ -5,88 +5,115 @@ const bcrypt = require('bcryptjs');
 const donorSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please add a name'],
-    trim: true
-  },
-  email: {
-    type: String,
-    required: [true, 'Please add an email'],
-    unique: true,
+    required: [true, 'Name is required'],
     trim: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email']
   },
-  phone: {
-    type: String,
-    required: [true, 'Please add a phone number'],
-    unique: true,
-    trim: true,
-    match: [/^\d{10}$/, 'Please add a valid 10-digit phone number']
+  age: {
+    type: Number,
+    required: [true, 'Age is required'],
+    min: [18, 'Must be at least 18 years old'],
+    max: [65, 'Must be no more than 65 years old'],
   },
-  password: {
+  gender: {
     type: String,
-    required: [true, 'Please add a password'],
-    minlength: [6, 'Password must be at least 6 characters']
+    required: [true, 'Gender is required'],
+    enum: ['male', 'female', 'other'],
   },
   bloodType: {
     type: String,
-    required: [true, 'Please add a blood type'],
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    required: [true, 'Blood type is required'],
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  },
+  phone: {
+    type: String,
+    required: [true, 'Phone number is required'],
+    match: [/^\d{10}$/, 'Please enter a valid 10-digit phone number'],
+    unique: true,
+  },
+  country: {
+    type: String,
+    required: [true, 'Country is required'],
+  },
+  state: {
+    type: String,
+    required: [true, 'State is required'],
+  },
+  city: {
+    type: String,
+    required: [true, 'City is required'],
+  },
+  smoking: {
+    type: String,
+    required: [true, 'Smoking status is required'],
+    enum: ['yes', 'no'],
+  },
+  drinking: {
+    type: String,
+    required: [true, 'Drinking status is required'],
+    enum: ['yes', 'no'],
+  },
+  lastDonation: {
+    type: String,
+    required: [true, 'Last donation information is required'],
+    enum: ['never', 'less_than_3_months', 'more_than_3_months'],
+    default: 'never',
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters'],
+    select: false // Don't return password by default in queries
+  },
+  donationCount: {
+    type: Number,
+    default: 0,
   },
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      default: 'Point'
+      default: 'Point',
     },
     coordinates: {
       type: [Number],
-      default: [0, 0]
+      default: [0, 0], // [longitude, latitude]
+      required: false,
     },
-    address: {
-      type: String,
-      required: [true, 'Please add an address']
-    }
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
   },
   isAvailable: {
     type: Boolean,
-    default: true
+    default: true,
   },
-  lastDonation: {
-    type: Date,
-    default: null
-  },
-  donations: [{
-    date: {
-      type: Date,
-      required: true
+  // List of blood requests directed to this donor
+  bloodRequests: [
+    {
+      requestId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BloodRequest',
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected', 'donated'],
+        default: 'pending',
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+      updatedAt: {
+        type: Date,
+        default: Date.now,
+      },
     },
-    location: {
-      type: String,
-      required: true
-    },
-    notes: String
-  }],
-  requests: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'BloodRequest'
-  }]
+  ],
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
-// Create index for location-based queries
+// Create index for geo queries
 donorSchema.index({ location: '2dsphere' });
-
-// Create index for phone number queries
+// Create index for phone number lookups (for login)
 donorSchema.index({ phone: 1 });
-
-// Create index for blood type queries
-donorSchema.index({ bloodType: 1 });
 
 // Hash the password before saving to db
 donorSchema.pre('save', async function(next) {
